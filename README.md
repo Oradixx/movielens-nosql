@@ -81,10 +81,10 @@ cd movielens-nosql
 # 1. Data: put MovieLens_ratingUsers.json in data/raw/ (see data/README.md), then
 python scripts/clean_data.py
 
-# 2. Start Cassandra and Neo4j (+ APOC)
-docker compose up -d
+# 2. Start Cassandra and Neo4j (+ APOC); --wait returns once both are healthy (~1 min)
+docker compose up -d --wait
 
-# 3. Cassandra (wait ~1 min for the node to start)
+# 3. Cassandra
 docker compose exec cassandra cqlsh -f /scripts/01_schema.cql
 docker compose exec cassandra cqlsh -f /scripts/02_load.cql
 docker compose exec cassandra cqlsh -f /scripts/03_queries.cql

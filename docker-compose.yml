@@ -13,6 +13,13 @@ services:
     volumes:
       - ./data/processed:/data:ro
       - ./cassandra:/scripts:ro
+    # Ready when cqlsh can connect (Cassandra takes 30-60 s to start)
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
 
   neo4j:
     image: neo4j:5
@@ -25,3 +32,10 @@ services:
     volumes:
       - ./data/processed:/import:ro   # LOAD CSV reads file:/// from /import
       - ./neo4j:/scripts:ro
+    # Ready when cypher-shell can run a query
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "movielens", "RETURN 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
