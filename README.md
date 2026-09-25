@@ -105,10 +105,11 @@ then compares what each database returns with values computed straight from the 
 the `true_average` aggregate, and the duplicate-name collision (two different users called *Alex Twin* end up
 as one `User` node).
 
-To run it locally, use the sample in place of the real file in step 1, then after step 4:
+To run it locally without the course file, replace step 1 with the first line below, then run the check after step 4
+(the sample goes to `data/raw/sample_ratings.json`, next to the real file, never over it):
 
 ```bash
-python tests/make_sample.py && python scripts/clean_data.py
+python tests/make_sample.py && python scripts/clean_data.py data/raw/sample_ratings.json
 python tests/check_results.py
 ```
 

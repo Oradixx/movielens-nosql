@@ -22,7 +22,7 @@ jobs:
       - name: Build the sample dataset
         run: |
           python tests/make_sample.py
-          python scripts/clean_data.py
+          python scripts/clean_data.py data/raw/sample_ratings.json
 
       - name: Start Cassandra and Neo4j
         run: docker compose up -d --wait
