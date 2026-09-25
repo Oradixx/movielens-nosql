@@ -1,0 +1,53 @@
+name: End-to-end
+
+# Runs the whole pipeline on a synthetic sample (the course dataset is not redistributable):
+# JSON -> CSV -> Cassandra + Neo4j -> every query script -> results checked against the CSV.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Build the sample dataset
+        run: |
+          python tests/make_sample.py
+          python scripts/clean_data.py
+
+      - name: Start Cassandra and Neo4j
+        run: docker compose up -d --wait
+
+      - name: Cassandra scripts
+        run: |
+          for f in 01_schema 02_load 03_queries; do
+            echo "::group::$f.cql"
+            docker compose exec -T cassandra cqlsh -f /scripts/$f.cql 2>&1 | tee /tmp/$f.log
+            echo "::endgroup::"
+            # cqlsh keeps going after an error, so look for one in the output
+            if grep -Eq "(Error|Exception|Failed)" /tmp/$f.log; then echo "::error::$f.cql failed"; exit 1; fi
+          done
+
+      - name: Neo4j scripts
+        run: |
+          for f in 01_constraints 02_load 03_simple_queries 04_complex_queries 05_advanced_queries; do
+            echo "::group::$f.cypher"
+            docker compose exec -T neo4j cypher-shell -u neo4j -p movielens -f /scripts/$f.cypher
+            echo "::endgroup::"
+          done
+
+      - name: Check results against the CSV
+        run: python tests/check_results.py
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose logs --tail 100

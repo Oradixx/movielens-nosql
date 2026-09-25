@@ -4,6 +4,7 @@ The same dataset of **1,000,209 movie ratings** (MovieLens 1M) modelled twice: a
 
 School project (NoSQL databases course, ESILV, March–April 2026). The scripts were rebuilt from our project reports, then re-run end to end with Docker (September 2026): same row counts, graph size and query results as our original runs.
 
+[![End-to-end](https://github.com/Oradixx/movielens-nosql/actions/workflows/e2e.yml/badge.svg)](https://github.com/Oradixx/movielens-nosql/actions/workflows/e2e.yml)
 ![Cassandra](https://img.shields.io/badge/Apache%20Cassandra-5.0-1287B1?logo=apachecassandra&logoColor=white)
 ![Neo4j](https://img.shields.io/badge/Neo4j-5-4581C3?logo=neo4j&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker%20Compose-2496ED?logo=docker&logoColor=white)
@@ -95,12 +96,29 @@ for f in 01_constraints 02_load 03_simple_queries 04_complex_queries 05_advanced
 done
 ```
 
+## Tests
+
+The course dataset is not redistributable, so CI ([`e2e.yml`](.github/workflows/e2e.yml)) runs the whole
+pipeline on a **synthetic sample** in the same format ([`tests/make_sample.py`](tests/make_sample.py)):
+JSON → CSV → Cassandra and Neo4j → every query script. [`tests/check_results.py`](tests/check_results.py)
+then compares what each database returns with values computed straight from the CSV: row and node counts,
+the `true_average` aggregate, and the duplicate-name collision (two different users called *Alex Twin* end up
+as one `User` node).
+
+To run it locally, use the sample in place of the real file in step 1, then after step 4:
+
+```bash
+python tests/make_sample.py && python scripts/clean_data.py
+python tests/check_results.py
+```
+
 ## Structure
 
 ```
 ├── scripts/clean_data.py      # JSON → CSV
 ├── cassandra/                 # schema, COPY import, queries + UDA
 ├── neo4j/                     # constraints, LOAD CSV import, simple / complex / advanced queries
+├── tests/                     # synthetic sample + result checks (run in CI)
 ├── docker-compose.yml         # Cassandra 5.0 (UDFs enabled) + Neo4j 5 (APOC)
 ├── data/                      # not included, see data/README.md
 └── docs/images/               # screenshots from the original runs
