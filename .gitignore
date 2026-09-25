@@ -1,0 +1,14 @@
+# Data (not redistributed)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Python
+__pycache__/
+.venv/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

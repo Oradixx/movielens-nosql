@@ -1,0 +1,29 @@
+services:
+  cassandra:
+    image: cassandra:5.0
+    container_name: cassandra-server
+    ports:
+      - "9042:9042"
+    environment:
+      - MAX_HEAP_SIZE=1G
+      - HEAP_NEWSIZE=256M
+    # Enable user-defined functions (needed by the true_average aggregate), then start normally
+    entrypoint: >
+      bash -c "sed -i -E 's/^(user_defined_functions_enabled|enable_user_defined_functions):.*/\\1: true/' /etc/cassandra/cassandra.yaml
+      && exec docker-entrypoint.sh cassandra -f"
+    volumes:
+      - ./data/processed:/data:ro
+      - ./cassandra:/scripts:ro
+
+  neo4j:
+    image: neo4j:5
+    container_name: neo4j-server
+    ports:
+      - "7474:7474"   # Neo4j Browser: http://localhost:7474
+      - "7687:7687"   # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/movielens   # local demo password
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - ./data/processed:/import:ro   # LOAD CSV reads file:/// from /import
+      - ./neo4j:/scripts:ro
