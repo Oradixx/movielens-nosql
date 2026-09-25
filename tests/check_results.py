@@ -76,7 +76,7 @@ check("Cassandra movies rated by 'Barry Erin'",
 check('Cassandra true_average (UDA) for The Matrix',
       float(cql(f"SELECT movielens.true_average(rating) FROM movielens.movie_trends "
                 f"WHERE movie_title = '{MATRIX}';")),
-      matrix_avg, tol=1e-6)  # cqlsh rounds doubles
+      matrix_avg, tol=1e-4)  # cqlsh prints 5 significant digits
 
 # --- Neo4j ------------------------------------------------------------------------------------
 check('Neo4j nodes', int(cypher('MATCH (n) RETURN count(n);')), len(users) + len(movies) + len(occupations))
