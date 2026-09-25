@@ -27,6 +27,7 @@ def check(label, got, expected, tol=None):
     print(f"{'OK  ' if ok else 'FAIL'} {label}: got {got}, expected {expected}")
     if not ok:
         failures.append(label)
+        print(f'::error title=Check failed::{label}: got {got}, expected {expected}')  # GitHub annotation
 
 
 def cql(query):
@@ -34,15 +35,22 @@ def cql(query):
                          cwd=ROOT, check=True, capture_output=True, text=True).stdout
     # cqlsh prints a header, a separator line, the values, then "(n rows)"
     lines = [l.strip() for l in out.splitlines() if l.strip()]
-    sep = next(i for i, l in enumerate(lines) if set(l) <= set('-+'))
-    return lines[sep + 1]
+    try:
+        sep = next(i for i, l in enumerate(lines) if set(l) <= set('-+'))
+        return lines[sep + 1]
+    except (StopIteration, IndexError):
+        print(f"::error title=Unexpected cqlsh output::{query} -> {' | '.join(lines)[:500]}")
+        raise
 
 
 def cypher(query):
     out = subprocess.run(['docker', 'compose', 'exec', '-T', 'neo4j', 'cypher-shell', '-u', 'neo4j',
                           '-p', 'movielens', '--format', 'plain', query],
                          cwd=ROOT, check=True, capture_output=True, text=True).stdout
-    return out.splitlines()[1].strip()
+    lines = out.splitlines()
+    if len(lines) < 2:
+        print(f"::error title=Unexpected cypher-shell output::{query} -> {out[:500]}")
+    return lines[1].strip()
 
 
 # --- Expected values, from the CSV ------------------------------------------------------------
