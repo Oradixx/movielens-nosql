@@ -2,7 +2,7 @@
 
 The same dataset of **1,000,209 movie ratings** (MovieLens 1M) modelled twice: as **query-first denormalised tables in Apache Cassandra**, then as a **property graph in Neo4j**, with queries ranging from single-partition reads to collaborative filtering, APOC path expansion and shortest paths.
 
-School project (NoSQL databases course, ESILV, March–April 2026). The scripts were rebuilt from our project reports, and the results below come from our original runs.
+School project (NoSQL databases course, ESILV, March–April 2026). The scripts were rebuilt from our project reports, then re-run end to end with Docker (September 2026): same row counts, graph size and query results as our original runs.
 
 ![Cassandra](https://img.shields.io/badge/Apache%20Cassandra-5.0-1287B1?logo=apachecassandra&logoColor=white)
 ![Neo4j](https://img.shields.io/badge/Neo4j-5-4581C3?logo=neo4j&logoColor=white)
